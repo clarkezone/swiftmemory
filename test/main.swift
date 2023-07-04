@@ -13,9 +13,13 @@ struct footester {
     
     public var memory: Memory<UInt16>
     public var c: Int32
-    public init(memory: Memory<UInt16>)
+    
+    private var readcallback: PortReadCallbackPassInout
+    
+    public init(memory: Memory<UInt16>, _ foo: @escaping PortReadCallbackPassInout)
     {
         self.memory = memory
+        self.readcallback = foo
         c = 1
     }
     
@@ -33,8 +37,16 @@ struct footester {
        var result = portRead(2)
         print(result)
     }
-
-    // todo escaping case
+    
+//    public mutating func doSomethingmutcbcaptureglobalEscaping() {
+//       var result = self.readcallback(2)
+//        print(result)
+//    }
+    
+    public mutating func doSomethingmutcbcaptureInOutEscaping() {
+        var result = self.readcallback(2, &self)
+        print(result)
+    }
 
     // todo escaping case with pass by reference
 
@@ -99,10 +111,12 @@ func portReadPassInOut(_ port: UInt16, _ inst: inout footester) -> UInt8 {
 
 print("Hello, world!")
 
-var ft: footester = footester(memory: Memory(sizeInBytes: 65536))
+var ft: footester = footester(memory: Memory(sizeInBytes: 65536), portReadPassInOut)
 ft.c=9
 //ft.doSomething(portRead: portRead)
-ft.doSomethingmutcbcaptureglobal(portRead: portRead)
+//ft.doSomethingmutcbcaptureglobal(portRead: portRead)
+//ft.doSomethingmutcbcaptureglobalEscaping(portRead: portRead)
+ft.doSomethingmutcbcaptureInOutEscaping()
 //ft.doSomethingcbpass(portRead: portReadPass)
 //ft.doSomethingcbpassMut(portRead: portReadPass)
 //ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
