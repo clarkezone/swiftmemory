@@ -92,10 +92,10 @@ func portReadPass(_ port: UInt16, _ inst: footester) -> UInt8 {
         default:
             return 0
     }
-    return 0
 }
 
 func portReadPassInOut(_ port: UInt16, _ inst: inout footester) -> UInt8 {
+    inst.c = 100
     switch inst.c {
         case 2:
             return 0
@@ -105,7 +105,6 @@ func portReadPassInOut(_ port: UInt16, _ inst: inout footester) -> UInt8 {
         default:
             return 0
     }
-    return 0
 }
 
 print("Hello, world!")
@@ -115,8 +114,8 @@ ft.c=9
 //ft.doSomething(portRead: portRead)
 //ft.doSomethingmutcbcaptureglobal(portRead: portRead)
 //ft.doSomethingmutcbcaptureglobalEscaping(portRead: portRead)
-ft.doSomethingmutcbcaptureInOutEscaping()
+//ft.doSomethingmutcbcaptureInOutEscaping()
 //ft.doSomethingcbpass(portRead: portReadPass)
 //ft.doSomethingcbpassMut(portRead: portReadPass)
-//ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
-print("done")
+ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
+print("done \(ft.c)")
