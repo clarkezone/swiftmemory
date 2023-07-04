@@ -46,9 +46,8 @@ struct footester {
     public mutating func doSomethingmutcbcaptureInOutEscaping() {
         var result = self.readcallback(2, &self)
         print(result)
+        //TODO verify state is updated in global
     }
-
-    // todo escaping case with pass by reference
 
     public func doSomethingcbpass(portRead: PortReadCallbackPass) {
        var result = portRead(2, self)
