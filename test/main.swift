@@ -100,7 +100,6 @@ func portReadPassInOut(_ port: UInt16, _ inst: inout footester) -> UInt8 {
         case 2:
             return 0
         case 9:
-
             return 0
         default:
             return 0
