@@ -1,8 +1,22 @@
+import Foundation
+
+func address(o: UnsafePointer<Void>) -> Int {
+    return unsafeBitCast(o, to: Int.self)
+}
+
 public struct Memory<AddressSize> where AddressSize : BinaryInteger {
     private var buffer : [UInt8]
 
     public init(sizeInBytes: Int) {
         buffer = Array(repeating: 0, count: sizeInBytes)
+    }
+
+    public func PrintAddress () {
+        printAddress(address: buffer)
+    }
+
+    private func printAddress(address o: UnsafeRawPointer ) {
+        print(String(format: "%p", Int(bitPattern: o)))
     }
 }
 
@@ -21,6 +35,10 @@ struct footester {
         self.memory = memory
         self.readcallback = foo
         c = 1
+    }
+
+    public mutating func PrintAddress() {
+print(NSString(format: "%p", address(o: &self)))
     }
     
     public mutating func doSomethingMut(portRead: PortReadCallback) {
@@ -46,7 +64,6 @@ struct footester {
     public mutating func doSomethingmutcbcaptureInOutEscaping() {
         var result = self.readcallback(2, &self)
         print(result)
-        //TODO verify state is updated in global
     }
 
     public func doSomethingcbpass(portRead: PortReadCallbackPass) {
@@ -55,9 +72,11 @@ struct footester {
     }
 
     public mutating func doSomethingcbpassMut(portRead: PortReadCallbackPass) {
+       self.PrintAddress()
        var result = portRead(2, self)
-        print(result)
-        //TODO: verify array address for memory is the same
+       self.memory.PrintAddress()
+       print(result)
+       //TODO: verify array address for memory is the same
     }
 
     public mutating func doSomethingcbpassMutInout(portRead: PortReadCallbackPassInout) {
@@ -111,11 +130,13 @@ print("Hello, world!")
 
 var ft: footester = footester(memory: Memory(sizeInBytes: 65536), portReadPassInOut)
 ft.c=9
+ft.PrintAddress()
+ft.memory.PrintAddress()
 //ft.doSomething(portRead: portRead)
 //ft.doSomethingmutcbcaptureglobal(portRead: portRead)
 //ft.doSomethingmutcbcaptureglobalEscaping(portRead: portRead)
 //ft.doSomethingmutcbcaptureInOutEscaping()
 //ft.doSomethingcbpass(portRead: portReadPass)
-//ft.doSomethingcbpassMut(portRead: portReadPass)
-ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
+ft.doSomethingcbpassMut(portRead: portReadPass)
+//ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
 print("done \(ft.c)")
