@@ -57,6 +57,7 @@ struct footester {
     public mutating func doSomethingcbpassMut(portRead: PortReadCallbackPass) {
        var result = portRead(2, self)
         print(result)
+        //TODO: verify array address for memory is the same
     }
 
     public mutating func doSomethingcbpassMutInout(portRead: PortReadCallbackPassInout) {
