@@ -16,7 +16,7 @@ public struct Memory<AddressSize> where AddressSize : BinaryInteger {
     }
 
     private func printAddress(address o: UnsafeRawPointer ) {
-        print(String(format: "%p", Int(bitPattern: o)))
+        print("Buffer Address:", String(format: "%p", Int(bitPattern: o)))
     }
 }
 
@@ -38,7 +38,7 @@ struct footester {
     }
 
     public mutating func PrintAddress() {
-print(NSString(format: "%p", address(o: &self)))
+print("Footester self:", NSString(format: "%p", address(o: &self)))
     }
     
     public mutating func doSomethingMut(portRead: PortReadCallback) {
@@ -139,4 +139,13 @@ ft.memory.PrintAddress()
 //ft.doSomethingcbpass(portRead: portReadPass)
 ft.doSomethingcbpassMut(portRead: portReadPass)
 //ft.doSomethingcbpassMutInout(portRead: portReadPassInOut)
+
+print ("Copy but not modified")
+var bt = ft
+bt.PrintAddress()
+
+print ("Modify BT")
+bt.c=10
+bt.PrintAddress()
+
 print("done \(ft.c)")
