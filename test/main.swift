@@ -4,8 +4,10 @@ func address(o: UnsafePointer<Void>) -> Int {
     return unsafeBitCast(o, to: Int.self)
 }
 
+//TODO: remote warnings
+//TODO: rename to bufferManager
 public struct Memory<AddressSize> where AddressSize : BinaryInteger {
-    private var buffer : [UInt8]
+    private var buffer : [AddressSize]
 
     public init(sizeInBytes: Int) {
         buffer = Array(repeating: 0, count: sizeInBytes)
@@ -20,9 +22,13 @@ public struct Memory<AddressSize> where AddressSize : BinaryInteger {
     }
 }
 
+// rename to worker
 struct footester {
+    //TODO rename to testcallbackcapture
     public typealias PortReadCallback = (UInt16) -> UInt8
+    //TODO rename to testcallbackpassself
     public typealias PortReadCallbackPass = (UInt16, footester) -> UInt8
+    //TODO rename to testcallbackpassselfinout
     public typealias PortReadCallbackPassInout = (UInt16, inout footester) -> UInt8
     
     public var memory: Memory<UInt16>
@@ -40,7 +46,8 @@ struct footester {
     public mutating func PrintAddress() {
 print("Footester self:", NSString(format: "%p", address(o: &self)))
     }
-    
+   
+   //rename dosomethingreport
     public mutating func doSomethingMut(portRead: PortReadCallback) {
        var result = doSomeNestedMut()
         print(result)
