@@ -192,19 +192,20 @@ print("END doSomethingmutcbPassArgEscaping")
 // And.. above works but what about implications of memory?
 
 // Do some basic tests on memory
+print ("Memory locations for first instance")
 ft.PrintAddress()
 ft.memory.PrintAddress()
 
-print ("Copy but not modified.  No copy on write for the struct")
+print ("Assignment of struct to another variable results in a copy (no copy on write for structs)")
 var bt = ft
 bt.PrintAddress()
-print ("Copy on write for the memory buffer wrapped by memory struct")
+print ("But we do get Copy-on-write behavior for the memory buffer wrapped by memory struct")
 // TODO: memory print addrses print self as well as buffer
 bt.memory.PrintAddress()
 
-print ("Modify BT")
-bt.c=10
-bt.PrintAddress()
+print ("Modify BT memory")
+// TODO: change memory
+bt.memory.PrintAddress()
 
 // Re-run by value version, printing memory
 ft.doSomethingmutcbPassArgEscaping() //call with true
