@@ -145,45 +145,72 @@ func TestCBPassArgInOut(_ port: UInt16, _ inst: inout ExclusivityTester) -> UInt
 print("Hello, world!")
 
 var ft: ExclusivityTester = ExclusivityTester(memory: Memory(sizeInBytes: 65536), TestCBPassArg, TestCBPassArgInOut, TestCBCaptureGlobal)
+// TODO does begin/end breakpoint fire?
 ft.c=9
-ft.PrintAddress()
-ft.memory.PrintAddress()
 
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
 ft.doSomethingmutcbcaptureglobalEscaping()
 
+// TODO: move exlusivitytester into it's own file
+// Try 1: wrap instance and callback in stuct/ class in this file
+// TODO: build wrapped version
+
+// Try 2: non-escaping
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
 ft.doSomethingmutcbcaptureglobalNonEscaping(callBack: TestCBCaptureGlobal)
 
-print("START doSomethingmutcbPassArgEscaping")
-ft.doSomethingmutcbPassArgEscaping()
-print("END doSomethingmutcbPassArgEscaping")
+// Try 3 remove global from callback non escaping
+print("START doSomethingcbpassMutNonEscaping")
+ft.doSomethingcbpassMutNonEscaping(callBack: TestCBPassArg)
+print("END doSomethingcbpassMutNonEscaping")
 
-print("START doSomethingmutcbPassArgInOutEscaping")
-ft.doSomethingmutcbPassArgInOutEscaping()
-print("END doSomethingmutcbPassArgInOutEscaping")
+print("START doSomethingcbpassInoutMutNonEscaping")
+ft.doSomethingcbpassMutInoutNonEscaping(callBack: TestCBPassArgInOut)
+print("END doSomethingcbpassInoutMutNonEscaping")
 
 print("START doSomethingcbpassNonEscaping")
 ft.doSomethingcbpassNonEscaping(callBack: TestCBPassArg)
 print("END doSomethingcbpassNonEscaping")
 
-print("START doSomethingcbpassMutNonEscaping")
-ft.doSomethingcbpassMutNonEscaping(callBack: TestCBPassArg)
-print("END doSomethingcbpassMutNonEscaping")
+// Does it work escaping?
 
-print("START doSomethingcbpassMutNonEscaping")
-ft.doSomethingcbpassMutInoutNonEscaping(callBack: TestCBPassArgInOut)
-print("END doSomethingcbpassMutNonEscaping")
+print("START doSomethingmutcbPassArgInOutEscaping")
+ft.doSomethingmutcbPassArgInOutEscaping()
+print("END doSomethingmutcbPassArgInOutEscaping")
 
+// Apply fix.. InOut not compatible with real problem
+// Because it requires mutability to propogate so:
 
-print ("Copy but not modified")
+print("START doSomethingmutcbPassArgEscaping")
+// TODO: add print memory
+ft.doSomethingmutcbPassArgEscaping()
+print("END doSomethingmutcbPassArgEscaping")
+
+// Does the fact it works escaping mean the docs are wrong?
+// And.. above works but what about implications of memory?
+
+// Do some basic tests on memory
+ft.PrintAddress()
+ft.memory.PrintAddress()
+
+print ("Copy but not modified.  No copy on write for the struct")
 var bt = ft
 bt.PrintAddress()
+print ("Copy on write for the memory buffer wrapped by memory struct")
+// TODO: memory print addrses print self as well as buffer
+bt.memory.PrintAddress()
 
 print ("Modify BT")
 bt.c=10
 bt.PrintAddress()
+
+// Re-run by value version, printing memory
+ft.doSomethingmutcbPassArgEscaping() //call with true
+// Conclusion, because the func is non-mutable, event though struct 
+// isn't copy on write, it isn't copied because it's read only
+
+// Conclusion.  Remove global capture.  Pass by value
 
 print("done \(ft.c)")
