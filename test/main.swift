@@ -85,10 +85,10 @@ struct ExclusivityTester {
     }
 
     public mutating func doSomethingcbpassMutNonEscaping(callBack: CallbackPassArg) {
-        self.c += 1
+       self.c += 1
        self.PrintAddress()
        let result = callBack(2, self)
-        print(result)
+       print(result)
        self.memory.PrintAddress()
        //TODO: verify array address for memory is the same
     }
