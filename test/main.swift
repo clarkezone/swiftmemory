@@ -1,110 +1,3 @@
-import Foundation
-
-func address(o: UnsafeRawPointer) -> Int {
-    return Int(Int(bitPattern: o))
-}
-
-public struct Memory<AddressSize> where AddressSize : BinaryInteger {
-    private var buffer : [AddressSize]
-
-    public init(sizeInBytes: Int) {
-        buffer = Array(repeating: 0, count: sizeInBytes)
-    }
-
-    public func PrintAddress () {
-        printAddress(address: buffer)
-    }
-
-    private func printAddress(address o: UnsafeRawPointer ) {
-        print("Memory buffer address:", String(format: "%p", Int(bitPattern: o)))
-    }
-}
-
-struct ExclusivityTester {
-    
-    public typealias Callback = (UInt16) -> UInt8
-
-    public typealias CallbackPassArg = (UInt16, ExclusivityTester) -> UInt8
-
-    public typealias CallbackPassArgInout = (UInt16, inout ExclusivityTester) -> UInt8
-    
-    public var memory: Memory<UInt16>
-    public var c: Int32
-    
-    private var CallbackPassArgInout: CallbackPassArgInout
-    private var CallbackPassArg: CallbackPassArg
-    private var CallbackCaptureGlobal: Callback
-    
-    public init(memory: Memory<UInt16>,
-                _ passArg: @escaping CallbackPassArg,
-                _ passArgInout: @escaping CallbackPassArgInout,
-                _ captureGlobal: @escaping Callback)
-    {
-        self.memory = memory
-        self.CallbackPassArg = passArg
-        self.CallbackPassArgInout = passArgInout
-        self.CallbackCaptureGlobal = captureGlobal
-        c = 1
-    }
-
-    public mutating func PrintAddress() {
-        print("ExclusivityTester self:", NSString(format: "%p", address(o: &self)))
-    }
-
-    public mutating func doSomethingmutcbcaptureglobalEscaping() {
-        self.c += 1
-        print("START doSomethingmutcbcaptureglobalEscaping")
-        let result = self.CallbackCaptureGlobal(2)
-        print("Result from callback :\(result)")
-        print("END doSomethingmutcbcaptureglobalEscaping")
-    }
-    
-    public mutating func doSomethingmutcbcaptureglobalNonEscaping(callBack: Callback) {
-        print("START doSomethingmutcbcaptureglobalNonEscaping")
-        self.c += 1
-       let result = callBack(2)
-        print("Result from callback :\(result)")
-        print("END doSomethingmutcbcaptureglobalNonEscaping")
-    }
-    
-    public mutating func doSomethingmutcbPassArgEscaping() {
-        self.c += 1
-       let result = self.CallbackPassArg(2, self)
-        print(result)
-    }
-    
-    public mutating func doSomethingmutcbPassArgInOutEscaping() {
-        self.c += 1
-        let result = self.CallbackPassArgInout(2, &self)
-        print(result)
-    }
-
-    public func doSomethingcbpassNonEscaping(callBack: CallbackPassArg) {
-        let result = callBack(2, self)
-        print(result)
-    }
-
-    public mutating func doSomethingcbpassMutNonEscaping(callBack: CallbackPassArg) {
-       self.c += 1
-       self.PrintAddress()
-       let result = callBack(2, self)
-       print(result)
-       self.memory.PrintAddress()
-       //TODO: verify array address for memory is the same
-    }
-
-    public mutating func doSomethingcbpassMutInoutNonEscaping(callBack: CallbackPassArgInout) {
-        self.c += 1
-        //TODO: callback mutates because of inout
-       let result = callBack(2, &self)
-        print(result)
-    }
-
-    public mutating func doSomeNestedMut() -> UInt8 {
-return 8
-    }
-}
-
 // Callbacks
 
 func TestCBCaptureGlobal(_ port: UInt16) -> UInt8 {
@@ -142,7 +35,8 @@ func TestCBPassArgInOut(_ port: UInt16, _ inst: inout ExclusivityTester) -> UInt
     }
 }
 
-print("Hello, world!")
+print("Welcome to memory exclusivity tester!")
+print("To run all examples, compile with swiftc -enforce-exclusivity=checked!")
 
 var ft: ExclusivityTester = ExclusivityTester(memory: Memory(sizeInBytes: 65536), TestCBPassArg, TestCBPassArgInOut, TestCBCaptureGlobal)
 // TODO does begin/end breakpoint fire?
@@ -150,45 +44,56 @@ ft.c=9
 
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
+#if BUILD_FAILING
 ft.doSomethingmutcbcaptureglobalEscaping()
+#endif
 
-// TODO: move exlusivitytester into it's own file
+print("\n")
+
 // Try 1: wrap instance and callback in stuct/ class in this file
 // TODO: build wrapped version
 
 // Try 2: non-escaping
-//TODO: use non-global
-
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
+// TODO: how to build with BUILD_FAILING
+#if BUILD_FAILING
 ft.doSomethingmutcbcaptureglobalNonEscaping(callBack: TestCBCaptureGlobal)
+#endif
+
+print("\n")
 
 // Try 3 remove global from callback non escaping
-print("START doSomethingcbpassMutNonEscaping")
-ft.doSomethingcbpassMutNonEscaping(callBack: TestCBPassArg)
-print("END doSomethingcbpassMutNonEscaping")
+ft.DoSomethingCbPassNonEscaping(callBack: TestCBPassArg)
 
-print("START doSomethingcbpassInoutMutNonEscaping")
-ft.doSomethingcbpassMutInoutNonEscaping(callBack: TestCBPassArgInOut)
-print("END doSomethingcbpassInoutMutNonEscaping")
+print("\n")
 
-print("START doSomethingcbpassNonEscaping")
-ft.doSomethingcbpassNonEscaping(callBack: TestCBPassArg)
-print("END doSomethingcbpassNonEscaping")
+ft.DoSomethingMutCbPassArgNonEscaping(printmemory: false, callBack: TestCBPassArg)
 
-// Does it work escaping?
+print("\n")
 
-print("START doSomethingmutcbPassArgInOutEscaping")
+//TODO: build from cli
+ft.doSomethingcbpassMutInoutNonEscaping(false) {
+    cc, dd -> UInt8 in
+    print(cc)
+    dd.c += 1000
+    return 10
+}
+
+print("\n")
+
+// Does it work escaping?  Minimize code change
 ft.doSomethingmutcbPassArgInOutEscaping()
-print("END doSomethingmutcbPassArgInOutEscaping")
+
+print("\n")
 
 // Apply fix.. InOut not compatible with real problem
 // Because it requires mutability to propogate so:
 
-print("START doSomethingmutcbPassArgEscaping")
-// TODO: add print memory
-ft.doSomethingmutcbPassArgEscaping()
-print("END doSomethingmutcbPassArgEscaping")
+ft.DoSomethingMutCbPassArgEscaping(false)
+
+print("\n")
+print("*************")
 
 // Does the fact it works escaping mean the docs are wrong?
 // And.. above works but what about implications of memory?
@@ -196,24 +101,47 @@ print("END doSomethingmutcbPassArgEscaping")
 // Do some basic tests on memory
 print ("Memory locations for first instance")
 ft.PrintAddress()
-ft.memory.PrintAddress()
+ft.memory.PrintStructAddress()
 
 print ("Assignment of struct to another variable results in a copy (no copy on write for structs)")
 var bt = ft
 bt.PrintAddress()
 print ("But we do get Copy-on-write behavior for the memory buffer wrapped by memory struct")
-// TODO: memory print addrses print self as well as buffer
-bt.memory.PrintAddress()
+bt.memory.PrintStructAddress()
 
 print ("Modify BT memory")
-// TODO: change memory
-bt.memory.PrintAddress()
+bt.memory.SetAddress(10, 10)
+bt.memory.PrintStructAddress()
 
+print()
+
+print ("Re-run by-value version, printing memory")
 // Re-run by value version, printing memory
-ft.doSomethingmutcbPassArgEscaping() //call with true
-// Conclusion, because the func is non-mutable, event though struct 
-// isn't copy on write, it isn't copied because it's read only
+ft.PrintAddress()
+ft.memory.PrintBufferAddress()
+ft.DoSomethingMutCbPassArgNonEscaping(printmemory: true) {
+    aa, bb -> UInt8 in
+    print("Memory in callback")
+    //bb.PrintAddress() // Can't as bb is not passed as inout
+    // TODO: how to use LLDB to verify deep copy
+    print("Can't print memory as instance passed is not inout")
+    print("callback end")
+    return 0
+}
 
-// Conclusion.  Remove global capture.  Pass by value
+print()
+
+print ("Re-run inout version, printing memory")
+// Re-run by value version, printing memory
+ft.doSomethingcbpassMutInoutNonEscaping(true) {
+    aa, bb -> UInt8 in
+    print("Memory in callback")
+    bb.PrintAddress()
+    bb.memory.PrintBufferAddress()
+    print("callback end")
+    return 0
+}
+
+// Conclusion.  Remove global capture.  Pass inout to avoid deep copy
 
 print("done \(ft.c)")
