@@ -157,6 +157,8 @@ ft.doSomethingmutcbcaptureglobalEscaping()
 // TODO: build wrapped version
 
 // Try 2: non-escaping
+//TODO: use non-global
+
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
 ft.doSomethingmutcbcaptureglobalNonEscaping(callBack: TestCBCaptureGlobal)
