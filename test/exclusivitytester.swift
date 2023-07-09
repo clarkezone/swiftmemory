@@ -36,6 +36,13 @@ public struct Memory<AddressSize> where AddressSize : BinaryInteger {
     }
 }
 
+extension Memory: CustomReflectable {
+    public var customMirror: Mirror {
+           return Mirror(self,
+                         children: [])
+       }
+}
+
 struct ExclusivityTester {
     
     public typealias Callback = (UInt16) -> UInt8

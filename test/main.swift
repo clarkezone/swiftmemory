@@ -39,11 +39,12 @@ print("Welcome to memory exclusivity tester!")
 print("To run all examples, compile with swiftc -enforce-exclusivity=checked!")
 
 var ft: ExclusivityTester = ExclusivityTester(memory: Memory(sizeInBytes: 65536), TestCBPassArg, TestCBPassArgInOut, TestCBCaptureGlobal)
-// TODO does begin/end breakpoint fire?
+// TODO: does begin/end breakpoint fire?
 ft.c=9
 
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
+// swiftc main.swift exclusivitytester.swift -DBUILD_FAILING to define macro
 #if BUILD_FAILING
 ft.doSomethingmutcbcaptureglobalEscaping()
 #endif
@@ -56,7 +57,7 @@ print("\n")
 // Try 2: non-escaping
 //Fail when built via swiftc -enforce-exclusivity=checked
 // use swiftc -enforce-exclusivity=unchecked
-// TODO: how to build with BUILD_FAILING
+// swiftc main.swift exclusivitytester.swift -DBUILD_FAILING
 #if BUILD_FAILING
 ft.doSomethingmutcbcaptureglobalNonEscaping(callBack: TestCBCaptureGlobal)
 #endif
@@ -72,7 +73,6 @@ ft.DoSomethingMutCbPassArgNonEscaping(printmemory: false, callBack: TestCBPassAr
 
 print("\n")
 
-//TODO: build from cli
 ft.doSomethingcbpassMutInoutNonEscaping(false) {
     cc, dd -> UInt8 in
     print(cc)
