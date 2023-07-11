@@ -36,10 +36,10 @@ func TestCBPassArgInOut(_ port: UInt16, _ inst: inout ExclusivityTester) -> UInt
 }
 
 print("Welcome to memory exclusivity tester!")
-print("To run all examples, compile with swiftc -enforce-exclusivity=checked!")
+print("To run all examples, compile with swiftc -enforce-exclusivity=checked") // TODO: replace with lldb script
 
 var ft: ExclusivityTester = ExclusivityTester(memory: Memory(sizeInBytes: 65536), TestCBPassArg, TestCBPassArgInOut, TestCBCaptureGlobal)
-// TODO: does begin/end breakpoint fire?
+// TODO: does begin/end breakpoint fire? lldb
 ft.c=9
 
 //Fail when built via swiftc -enforce-exclusivity=checked
@@ -51,8 +51,60 @@ ft.doSomethingmutcbcaptureglobalEscaping()
 
 print("\n")
 
+///
 // Try 1: wrap instance and callback in stuct/ class in this file
 // TODO: build wrapped version
+///
+
+class wrappedtester {
+    private let et: ExclusivityTester
+    init() {
+        et = ExclusivityTester(memory: Memory(sizeInBytes: 65536),
+                               {a, b -> UInt8 in return 0},
+                               {a, b -> UInt8 in return 0},
+                               {a -> UInt8 in return 0})
+    }
+    
+    func TestCBCaptureWrapperMember(_ port: UInt16) -> UInt8 {
+        switch ft.c {
+        case 2:
+            return 0
+        case 9:
+            
+            return 0
+        default:
+            return 0
+            
+        }
+    }
+    func TestCBPassArgWrapperMember(_ port: UInt16, _ inst: ExclusivityTester) -> UInt8 {
+        switch inst.c {
+            case 2:
+                return 0
+            case 9:
+                return 0
+            default:
+                return 0
+        }
+    }
+
+    func TestCBPassArgInOutWrapperMember(_ port: UInt16, _ inst: inout ExclusivityTester) -> UInt8 {
+        inst.c = 100
+        switch inst.c {
+            case 2:
+                return 0
+            case 9:
+                return 0
+            default:
+                return 0
+        }
+    }
+
+}
+
+let wt = wrappedtester()
+let result = wt.TestCBCaptureWrapperMember(5)
+
 
 // Try 2: non-escaping
 //Fail when built via swiftc -enforce-exclusivity=checked
