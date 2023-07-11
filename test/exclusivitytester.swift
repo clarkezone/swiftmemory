@@ -70,6 +70,18 @@ struct ExclusivityTester {
         c = 1
     }
     
+    // Used by try 2
+    // Overload that doesn't take callbacks to allow initialization when used as member of class
+    // without this error 'self' used before all stored properties are initialized
+    public init(memory: Memory<UInt16>)
+    {
+        self.memory = memory
+        self.CallbackPassArg = {a, b -> UInt8 in return 0}
+        self.CallbackPassArgInout =  {a, b -> UInt8 in return 0}
+        self.CallbackCaptureGlobal =  {a -> UInt8 in return 0}
+        c = 1
+    }
+    
     public mutating func PrintAddress() {
         print("ExclusivityTester self:", NSString(format: "%p", address(o: &self)))
     }
