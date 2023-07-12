@@ -62,15 +62,15 @@ print("\n")
 // // // //
 
 class wrappedtester {
-    private let et: ExclusivityTester
+    private var et: ExclusivityTester
     init() {
         et = ExclusivityTester(memory: Memory(sizeInBytes: 65536))
-            //TODO: assign closures
+        et.SetGlobalCallback(self.TestCBPassArgInOutWrapperMember)
     }
 
-    func TestCBPassArgInOutWrapperMember(_ port: UInt16, _ inst: inout ExclusivityTester) -> UInt8 {
-        inst.c = 100
-        switch inst.c {
+    func TestCBPassArgInOutWrapperMember(_ port: UInt16) -> UInt8 {
+       self.et.c = 100
+        switch self.et.c {
             case 2:
                 return 0
             case 9:
@@ -80,10 +80,15 @@ class wrappedtester {
         }
     }
 
+    public func Go() {
+        self.et.doSomethingmutcbcaptureglobalEscaping()
+    }
+
 }
 
 let wt = wrappedtester()
-//let result = wt.TestCBCaptureWrapperMember(5)
+// TODO: set callback to class member
+wt.Go()
 
 
 // Try 2: non-escaping

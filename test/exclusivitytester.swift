@@ -69,6 +69,10 @@ struct ExclusivityTester {
         self.CallbackCaptureGlobal = captureGlobal
         c = 1
     }
+
+    public mutating func SetGlobalCallback(_ callback: @escaping (UInt16) -> UInt8) {
+self.CallbackCaptureGlobal = callback
+    }
     
     // Used by try 2
     // Overload that doesn't take callbacks to allow initialization when used as member of class
